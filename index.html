@@ -1,249 +1,413 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VELORA | بوتيكك الأنيق</title>
-<style>
-:root{--pink:#d77c9d;--dark:#492b3b;--bg:#fff8fb;--line:#f0dce5}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--dark)}
-header{background:white;padding:24px 16px;text-align:center;border-bottom:1px solid var(--line)}
-header h1{margin:0;font-size:32px;letter-spacing:4px;color:var(--pink)}
-header p{margin:9px 0 0}
-main{max-width:900px;margin:auto;padding:18px}
-h2{margin-top:26px}
-.filters{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
-button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:11px 14px}
-.filter{background:white;border:1px solid var(--line);color:var(--dark)}
-.filter.active,.primary{background:var(--pink);color:white}
-#products{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
-.card,.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:14px}
-.pic{font-size:48px;text-align:center;background:#fff1f6;border-radius:12px;padding:18px 4px}
-.card h3{font-size:16px;min-height:36px}
-.price{font-weight:bold;color:var(--pink)}
-.note{font-size:13px;color:#8d7180}
-.add{background:var(--dark);color:white;width:100%;margin-top:12px}
-.panel{margin-top:18px}
-.cart-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
-.cart-row button{padding:6px 10px;background:#faeaf1}
-.total{font-size:20px;font-weight:bold;margin:18px 0}
-label{display:block;margin-top:14px;margin-bottom:6px;font-weight:bold}
-input,textarea{width:100%;padding:12px;border:1px solid #e4cbd7;border-radius:10px;font:inherit;background:white}
-textarea{min-height:75px;resize:vertical}
-.primary{width:100%;margin-top:18px}
-footer{text-align:center;padding:24px;color:#8d7180;font-size:13px}
-</style>
-</head>
-<body>
-<header>
-<h1>VELORA</h1>
-<p>أناقتك تبدأ من هنا ♡</p>
-<p>ملابس • إكسسوارات • رياضة</p>
-</header>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#a64d79">
+  <title>Velora | طلبيتك بكل أناقة</title>
 
-<main>
-<h2>تسوّقي مجموعتنا ✨</h2>
-<div class="filters">
-<button class="filter active" onclick="filterProducts('الكل',this)">الكل</button>
-<button class="filter" onclick="filterProducts('ملابس',this)">ملابس</button>
-<button class="filter" onclick="filterProducts('إكسسوارات',this)">إكسسوارات</button>
-<button class="filter" onclick="filterProducts('رياضة',this)">رياضة</button>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<div id="products"></div>
+  <style>
+    * { box-sizing: border-box; }
 
-<section class="panel">
-<h2>🛍️ سلّتك</h2>
-<div id="cart"><p class="note">السلة فارغة حاليًا.</p></div>
-<div class="total">المجموع: <span id="total">0 دج</span></div>
-</section>
-
-<section class="panel">
-<h2>إتمام الطلب 💗</h2>
-<form id="orderForm">
-<label for="customer">الاسم الكامل</label>
-<input id="customer" required maxlength="100" placeholder="اكتبي اسمك">
-
-<label for="phone">رقم الهاتف</label>
-<input id="phone" required type="tel" maxlength="30" placeholder="05 / 06 / 07">
-
-<label for="address">الولاية والبلدية</label>
-<input id="address" required maxlength="200" placeholder="مكان التوصيل">
-
-<label for="details">تفاصيل إضافية (المقاس، اللون...)</label>
-<textarea id="details" maxlength="1000" placeholder="اكتبي التفاصيل إذا حبيتي"></textarea>
-
-<label for="productImage">صورة المنتج (اختياري)</label>
-<input id="productImage" type="file" accept="image/jpeg,image/png,image/webp">
-<p class="note">الصيغ المقبولة JPG وPNG وWebP، بحجم أقصى 5 ميغابايت.</p>
-
-<button class="primary" id="submitButton" type="submit">إرسال الطلب</button>
-<p class="note">لن يُعتبر الطلب مرسلًا إلا بعد تأكيد نجاح التسجيل.</p>
-</form>
-</section>
-</main>
-
-<footer>VELORA ♡ أناقة بتفاصيلك</footer>
-
-<script>
-'use strict';
-
-const SUPABASE_URL = 'https://rogrvbgbrafuyzzxwsjf.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'ضعي_المفتاح_العام_هنا';sb_publishable_CdWiOyTti7pEh0Q4lvbpDQ_zI6_r-z2
-
-const products = [
-{id:1,name:'فستان أنيق',cat:'ملابس',,emoji:'👗'},
-{id:2,name:'حقيبة نسائية',cat:'إكسسوارات',emoji:'👜'},
-{id:3,name:'طقم رياضي',cat:'رياضة',,emoji:'🎽'},
-{id:4,name:'إكسسوار ناعم',cat:'إكسسوارات',emoji:'🎀'},
-{id:5,name:'بلوزة أنيقة',cat:'ملابس',emoji:'👚'},
-{id:6,name:'حذاء رياضي',cat:'رياضة',emoji:'👟'}
-];
-
-let cart = {};
-let category = 'الكل';
-
-const money = n => n.toLocaleString('fr-DZ') + ' دج';
-
-function renderProducts(){
-  const list = products.filter(p => category === 'الكل' || p.cat === category);
-  document.getElementById('products').innerHTML = list.map(p => `
-    <article class="card">
-      <div class="pic">${p.emoji}</div>
-      <h3>${p.name}</h3>
-      <div class="price">${money(p.price)}</div>
-      <p class="note">السعر تجريبي — يتأكد حسب الطلب</p>
-      <button class="add" type="button" onclick="addToCart(${p.id})">أضيفي للسلة</button>
-    </article>
-  `).join('');
-}
-
-function filterProducts(cat, btn){
-  category = cat;
-  document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderProducts();
-}
-
-function addToCart(id){
-  cart[id] = (cart[id] || 0) + 1;
-  renderCart();
-}
-
-function changeQty(id, amount){
-  cart[id] = (cart[id] || 0) + amount;
-  if(cart[id] <= 0) delete cart[id];
-  renderCart();
-}
-
-function renderCart(){
-  const ids = Object.keys(cart);
-  const box = document.getElementById('cart');
-
-  if(!ids.length){
-    box.innerHTML = '<p class="note">السلة فارغة حاليًا.</p>';
-  } else {
-    box.innerHTML = ids.map(id => {
-      const p = products.find(x => x.id === Number(id));
-      return `<div class="cart-row">
-        <div>${p.name}<br><span class="note">${money(p.price)} × ${cart[id]}</span></div>
-        <div>
-          <button type="button" onclick="changeQty(${id},-1)">−</button>
-          <span>${cart[id]}</span>
-          <button type="button" onclick="changeQty(${id},1)">+</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  const total = ids.reduce((sum,id) => {
-    const p = products.find(x => x.id === Number(id));
-    return sum + p.price * cart[id];
-  }, 0);
-
-  document.getElementById('total').textContent = money(total);
-}
-
-document.getElementById('orderForm').addEventListener('submit', async function(e){
-  e.preventDefault();
-
-  const ids = Object.keys(cart);
-  if(!ids.length){
-    alert('زيدي منتجًا واحدًا على الأقل للسلة أولًا.');
-    return;
-  }
-
-  if(SUPABASE_PUBLISHABLE_KEY === 'ضعي_المفتاح_العام_هنا'){
-    alert('لازم تضيفي المفتاح العام الصحيح قبل إرسال الطلب.');
-    return;
-  }
-
-  const image = document.getElementById('productImage').files[0];
-
-  if(image && !['image/jpeg','image/png','image/webp'].includes(image.type)){
-    alert('اختاري صورة JPG أو PNG أو WebP.');
-    return;
-  }
-
-  if(image && image.size > 5 * 1024 * 1024){
-    alert('حجم الصورة لازم يكون 5 ميغابايت أو أقل.');
-    return;
-  }
-
-  const items = ids.map(id => {
-    const p = products.find(x => x.id === Number(id));
-    return {
-      id:p.id,
-      name:p.name,
-      quantity:cart[id],
-      unit_price:p.price,
-      total:p.price * cart[id]
-    };
-  });
-
-  const form = new FormData();
-  form.append('customer_name', document.getElementById('customer').value.trim());
-  form.append('customer_phone', document.getElementById('phone').value.trim());
-  form.append('customer_address', document.getElementById('address').value.trim());
-  form.append('product_name', items.map(x => x.name).join('، '));
-  form.append('product_details', document.getElementById('details').value.trim());
-  form.append('items', JSON.stringify(items));
-  if(image) form.append('image', image);
-
-  const button = document.getElementById('submitButton');
-  button.disabled = true;
-  button.textContent = 'جارٍ إرسال الطلب...';
-
-  try {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/hyper-function`, {
-      method:'POST',
-      headers:{ apikey:SUPABASE_PUBLISHABLE_KEY },
-      body:form
-    });
-
-    const result = await response.json().catch(() => ({}));
-
-    if(!response.ok || result.success !== true){
-      throw new Error(result.error || 'تعذر تأكيد تسجيل الطلب.');
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff7fa;
+      color: #382632;
     }
 
-    alert('وصل طلبك بنجاح إلى VELORA 💗 رقم الطلب: ' + (result.order_id || result.id || 'تم التسجيل'));
-    cart = {};
-    renderCart();
-    this.reset();
-  } catch(error) {
-    console.error('VELORA order error:', error);
-    alert('ما قدرناش نأكدوا تسجيل الطلب. ' + error.message + ' حاولي لاحقًا.');
-  } finally {
-    button.disabled = false;
-    button.textContent = 'إرسال الطلب';
-  }
-});
+    header {
+      padding: 28px 18px;
+      text-align: center;
+      color: white;
+      background: linear-gradient(135deg, #81365f, #c77da0);
+    }
 
-renderProducts();
-renderCart();
-</script>
+    header h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      letter-spacing: 2px;
+    }
+
+    header p { margin: 0; line-height: 1.8; }
+
+    main {
+      max-width: 620px;
+      margin: 24px auto;
+      padding: 0 15px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #f0dce6;
+      border-radius: 20px;
+      padding: 22px 17px;
+      box-shadow: 0 8px 25px #763c5710;
+    }
+
+    h2 {
+      color: #963e6b;
+      font-size: 21px;
+      margin: 0 0 20px;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 7px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #e7cfdb;
+      border-radius: 11px;
+      background: #fffafd;
+      font-size: 15px;
+      font-family: inherit;
+      color: #382632;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: 2px solid #d9a1bb;
+      border-color: #a64d79;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #806d79;
+      line-height: 1.7;
+      margin-top: 7px;
+    }
+
+    #preview {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    #preview img {
+      width: 100%;
+      height: 115px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #f0dce6;
+    }
+
+    .payment {
+      background: #fff4f8;
+      padding: 13px;
+      border-radius: 12px;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 13px;
+      padding: 15px;
+      margin-top: 22px;
+      background: #963e6b;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    #message {
+      display: none;
+      margin-top: 15px;
+      padding: 13px;
+      border-radius: 10px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      text-align: center;
+      padding: 22px;
+      color: #896e7d;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Velora</h1>
+    <p>اختاري منتجك المفضّل، وأرسلي طلبك بكل سهولة ♡</p>
+  </header>
+
+  <main>
+    <form id="orderForm" class="card">
+      <h2>♡ تفاصيل المنتج</h2>
+
+      <label for="productName">اسم المنتج *</label>
+      <input id="productName" name="productName"
+             placeholder="مثلاً: فستان، حقيبة، حذاء..." required>
+
+      <label for="productLink">رابط المنتج</label>
+      <input id="productLink" name="productLink" type="url"
+             placeholder="الصقي رابط المنتج هنا إن وُجد">
+
+      <label for="productDetails">تفاصيل المنتج *</label>
+      <textarea id="productDetails" name="productDetails"
+        placeholder="اللون، المقاس، الكمية، السعر إن كان معروفاً..."
+        required></textarea>
+
+      <label for="photos">إرفاق صور المنتج *</label>
+      <input id="photos" name="photos" type="file"
+             accept="image/*" multiple required>
+      <div class="hint">
+        اختاري صورة أو عدة صور من هاتفك. الصور تُرفع عند إرسال الطلب.
+      </div>
+      <div id="preview"></div>
+
+      <hr style="border:0;border-top:1px solid #f0dce6;margin:24px 0">
+
+      <h2>♡ معلومات الزبونة</h2>
+
+      <label for="customerName">الاسم الكامل *</label>
+      <input id="customerName" name="customerName"
+             autocomplete="name" required>
+
+      <label for="phone">رقم الهاتف *</label>
+      <input id="phone" name="phone" type="tel"
+             inputmode="tel" autocomplete="tel"
+             placeholder="05 أو 06 أو 07..." required>
+
+      <label for="wilaya">الولاية *</label>
+      <input id="wilaya" name="wilaya"
+             placeholder="اكتبي الولاية" required>
+
+      <label for="municipality">البلدية *</label>
+      <input id="municipality" name="municipality"
+             placeholder="اكتبي البلدية" required>
+
+      <label for="address">العنوان بالتفصيل</label>
+      <textarea id="address" name="address"
+                placeholder="الحي، الشارع، معلومات تساعد على التوصيل"></textarea>
+
+      <label for="payment">طريقة الدفع *</label>
+      <select id="payment" name="payment" required>
+        <option value="BaridiMob">بريدي موب (BaridiMob)</option>
+      </select>
+
+      <div class="payment">
+        💳 الدفع عبر بريدي موب. تفاصيل التحويل والتأكيد تُرسل للزبونة
+        بعد الاتفاق على الطلب والسعر النهائي.
+      </div>
+
+      <button id="submitBtn" type="submit">إرسال الطلب</button>
+      <div id="message" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <footer>Velora ♡ اختاري ما يشبه أناقتك</footer>
+
+  <script>
+    // ضعي رابط مشروعك الحقيقي من Supabase هنا.
+    const SUPABASE_URL = "https://YOUR_PROJECT_REF.supabase.co";https://rogrvbgbrafuyzzxwsjf.supabase.co/rest/v1/
+
+    // المفتاح العام publishable الخاص بمشروعك.
+    const SUPABASE_KEY =
+      "sb_publishable_CdWiOyTti7pEh0Q4lvbpDQ_zI6_r-z2";
+
+    const STORAGE_BUCKET = "product-images";
+
+    const client = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const form = document.getElementById("orderForm");
+    const photoInput = document.getElementById("photos");
+    const preview = document.getElementById("preview");
+    const submitBtn = document.getElementById("submitBtn");
+    const message = document.getElementById("message");
+
+    function showMessage(text, success = false) {
+      message.style.display = "block";
+      message.textContent = text;
+      message.style.background = success ? "#eaf8ef" : "#fff0f0";
+      message.style.color = success ? "#176538" : "#a12626";
+    }
+
+    photoInput.addEventListener("change", () => {
+      preview.replaceChildren();
+
+      const files = Array.from(photoInput.files || []);
+
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          showMessage("اختاري ملفات صور فقط.");
+          photoInput.value = "";
+          preview.replaceChildren();
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          showMessage("حجم كل صورة لازم ما يفوتش 5 ميغابايت.");
+          photoInput.value = "";
+          preview.replaceChildren();
+          return;
+        }
+      }
+
+      for (const file of files) {
+        const img = document.createElement("img");
+        img.alt = "معاينة صورة المنتج";
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          img.src = reader.result;
+        };
+
+        reader.readAsDataURL(file);
+        preview.appendChild(img);
+      }
+
+      message.style.display = "none";
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (SUPABASE_URL.includes("YOUR_PROJECT_REF")) {
+        showMessage("لازم تضيفي رابط مشروع Supabase الحقيقي قبل الإرسال.");
+        return;
+      }
+
+      const files = Array.from(photoInput.files || []);
+
+      if (files.length === 0) {
+        showMessage("أرفقي صورة واحدة على الأقل للمنتج.");
+        return;
+      }
+
+      if (files.some(file => !file.type.startsWith("image/") ||
+                             file.size > 5 * 1024 * 1024)) {
+        showMessage("تأكدي أن الملفات صور، وحجم كل صورة لا يتجاوز 5 ميغابايت.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "جارٍ إرسال الطلب...";
+      message.style.display = "none";
+
+      const uploadedPaths = [];
+
+      try {
+        const productName =
+          document.getElementById("productName").value.trim();
+        const productLink =
+          document.getElementById("productLink").value.trim();
+        const productDetails =
+          document.getElementById("productDetails").value.trim();
+        const customerName =
+          document.getElementById("customerName").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const wilaya = document.getElementById("wilaya").value.trim();
+        const municipality =
+          document.getElementById("municipality").value.trim();
+        const address =
+          document.getElementById("address").value.trim();
+        const payment = document.getElementById("payment").value;
+
+        // رفع الصور إلى Supabase Storage أولاً.
+        for (const file of files) {
+          const safeName = file.name
+            .replace(/[^a-zA-Z0-9._-]/g, "_")
+            .slice(-100);
+
+          const path = `${crypto.randomUUID()}-${safeName}`;
+
+          const { error: uploadError } = await client.storage
+            .from(STORAGE_BUCKET)
+            .upload(path, file, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: file.type
+            });
+
+          if (uploadError) {
+            throw new Error("تعذر رفع الصور: " + uploadError.message);
+          }
+
+          uploadedPaths.push(path);
+        }
+
+        const fullAddress = [
+          `الولاية: ${wilaya}`,
+          `البلدية: ${municipality}`,
+          address ? `العنوان: ${address}` : ""
+        ].filter(Boolean).join(" - ");
+
+        const order = {
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString(),
+          customer_name: customerName,
+          customer_phone: phone,
+          customer_address: fullAddress,
+          product_name: productName,
+          product_details:
+            `${productDetails}\nرابط المنتج: ${productLink || "غير متوفر"}`,
+          image_path: uploadedPaths.join(","),
+          status: "new",
+          payment_method: payment,
+          items: [{
+            product_name: productName,
+            product_link: productLink || null,
+            product_details: productDetails,
+            image_paths: uploadedPaths,
+            payment_method: payment
+          }]
+        };
+
+        // لا نعلن النجاح إلا إذا نجح الإدخال في قاعدة البيانات.
+        const { error: insertError } = await client
+          .from("orders")
+          .insert(order);
+
+        if (insertError) {
+          throw new Error("تعذر تسجيل الطلب: " + insertError.message);
+        }
+
+        showMessage(
+          "تم تسجيل طلبك بنجاح! ❤️ احتفظي بمعلومات المنتج إلى حين تأكيد السعر والدفع.",
+          true
+        );
+
+        form.reset();
+        preview.replaceChildren();
+
+      } catch (error) {
+        console.error("Order submission error:", error);
+        showMessage(
+          "لم يتأكد تسجيل الطلب. " +
+          (error.message || "حدث خطأ غير معروف") +
+          " — ما تعاوديش الإرسال حتى نتحققوا من السبب."
+        );
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "إرسال الطلب";
+      }
+    });
+  </script>
 </body>
 </html>
