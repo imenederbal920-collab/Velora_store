@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff0f5">
+<title>VELORA | فيلورا</title>
+<style>
+*{box-sizing:border-box}
+:root{--pink:#f7dce7;--rose:#bd6685;--gold:#bd9552;--cream:#fffaf7;--ink:#513744}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Arial,sans-serif}
+header{padding:24px 16px 18px;text-align:center;background:linear-gradient(140deg,#fff0f5,#f4d1df)}
+.logo{font-family:Georgia,serif;font-size:35px;letter-spacing:4px;color:#a77836}
+.tag{font-size:12px;color:#92576e;margin-top:7px}
+nav{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;padding:14px 8px;background:#fff}
+button{font:inherit;cursor:pointer}
+nav button,.filter{border:1px solid #edcfda;background:#fff8fb;border-radius:22px;padding:9px 15px;color:#92576e}
+nav button.active,.filter.active{background:var(--rose);color:white}
+.hero{margin:16px;padding:27px 18px;border-radius:20px;background:linear-gradient(135deg,#f9e4ec,#fff5e7);text-align:center}
+.hero h1{font-family:Georgia,serif;color:#a77836;font-size:27px;margin:0 0 10px}
+.hero p{font-size:14px;line-height:1.9;margin:0}
+.section-title{text-align:center;margin:26px 0 14px;font-family:Georgia,serif;color:#a77836;font-size:23px}
+.filters{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:0 10px 16px}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 12px}
+.card{background:white;border:1px solid #f0e2e7;border-radius:15px;overflow:hidden}
+.pic{height:145px;display:flex;align-items:center;justify-content:center;background:#f9eaf0;font-size:48px}
+.info{padding:11px}
+.info h3{font-size:14px;margin:0 0 8px}
+.price{color:#a65d79;font-weight:bold;font-size:14px;margin-bottom:10px}
+.note{font-size:11px;color:#907d84;margin-bottom:10px}
+.add,.order-btn{border:0;background:var(--rose);color:white;padding:10px;border-radius:10px;width:100%;font-size:13px}
+main{max-width:650px;margin:auto;padding-bottom:30px}
+.cart{margin:24px 12px;background:white;border:1px solid #ead5df;border-radius:16px;padding:16px}
+.cart h2{margin:0 0 12px;color:#a77836;font-size:20px}
+.cart-row{display:flex;align-items:center;gap:8px;border-bottom:1px solid #f2e6eb;padding:10px 0;font-size:13px}
+.cart-row span:first-child{flex:1}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{border:1px solid #ead5df;background:#fff4f8;border-radius:6px;padding:4px 9px}
+.remove{border:0;background:none;color:#b45d78}
+.total{font-weight:bold;margin:15px 0}
+label{display:block;font-size:13px;margin:12px 0 6px}
+input,textarea,select{width:100%;padding:12px;border:1px solid #e6cbd7;border-radius:10px;background:#fffdfd;font:inherit;font-size:14px}
+footer{text-align:center;padding:22px 12px;background:#f8e3ec;color:#966c7e;font-size:12px;line-height:2}
+.empty{text-align:center;color:#9b838e;font-size:13px;padding:12px}
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:25px">♡ 👑 ♡</div>
+  <div class="logo">VELORA</div>
+  <div class="tag">لمسة أناقة في كل اختيار ✨</div>
+</header>
+<nav>
+  <button class="active" onclick="filterProducts('الكل',this)">الرئيسية</button>
+  <button onclick="filterProducts('ملابس',this)">ملابس</button>
+  <button onclick="filterProducts('إكسسوارات',this)">إكسسوارات</button>
+  <button onclick="filterProducts('رياضة',this)">ملابس رياضية</button>
+  <button onclick="document.getElementById('cart').scrollIntoView({behavior:'smooth'})">🛍️ سلتي (<span id="count">0</span>)</button>
+</nav>
+<main>
+<section class="hero">
+  <h1>أناقتك، على ذوقك 💗</h1>
+  <p>اختاري القطع اللي تحبيها، اطلبيها حسب الطلب، وخلي علينا الباقي.<br>✨ اكتشفي عالم VELORA ✨</p>
+</section>
+<h2 class="section-title">♡ اكتشفي مجموعتنا ♡</h2>
+<div class="filters">
+  <button class="filter active" onclick="filterProducts('الكل',this)">الكل</button>
+  <button class="filter" onclick="filterProducts('ملابس',this)">ملابس</button>
+  <button class="filter" onclick="filterProducts('إكسسوارات',this)">إكسسوارات</button>
+  <button class="filter" onclick="filterProducts('رياضة',this)">رياضة</button>
+</div>
+<div class="products" id="products"></div>
+<section class="cart" id="cart">
+  <h2>🛍️ سلة طلباتك</h2>
+  <div id="cartItems" class="empty">السلة فارغة حاليًا، اختاري قطعة تعجبك 💕</div>
+  <div class="total" id="total"></div>
+  <form id="orderForm">
+    <label for="customer">الاسم الكامل</label>
+    <input id="customer" required placeholder="اكتبي اسمك">
+    <label for="phone">رقم الهاتف</label>
+    <input id="phone" required type="tel" placeholder="05 / 06 / 07">
+    <label for="address">الولاية والبلدية</label>
+    <input id="address" required placeholder="مكان التوصيل">
+    <label for="details">تفاصيل إضافية (المقاس، اللون...)</label>
+    <textarea id="details" rows="2" placeholder="اكتبي اختياراتك هنا"></textarea>
+    <button class="order-btn" type="submit">إرسال الطلب</button>
+    <p style="font-size:11px;line-height:1.8;color:#907d84">هذه نسخة تجريبية: الطلب سيُعرض لك على الشاشة فقط، ولن يصل إلى البائعة حتى نربط وسيلة استقبال الطلبات.</p>
+  </form>
+</section>
+</main>
+<footer>
+  <div style="font-family:Georgia,serif;font-size:22px;color:#a77836">VELORA ♡</div>
+  أناقة تختارينها بنفسك<br>المنتجات تُطلب حسب الطلب، والتوفر والسعر النهائي يحتاجان التأكيد.
+</footer>
+<script>
+const products=[
+{id:1,name:'فستان أنيق',cat:'ملابس',price:3500,emoji:'👗'},
+{id:2,name:'حقيبة نسائية',cat:'إكسسوارات',price:2800,emoji:'👜'},
+{id:3,name:'طقم رياضي',cat:'رياضة',price:3200,emoji:'🎽'},
+{id:4,name:'إكسسوار ناعم',cat:'إكسسوارات',price:1200,emoji:'💎'},
+{id:5,name:'بلوزة أنيقة',cat:'ملابس',price:2200,emoji:'👚'},
+{id:6,name:'حذاء رياضي',cat:'رياضة',price:3900,emoji:'👟'}
+];
+let cart={};
+let category='الكل';
+const money=n=>n.toLocaleString('fr-DZ')+' دج';
+function renderProducts(){
+ document.getElementById('products').innerHTML=products.filter(p=>category==='الكل'||p.cat===category).map(p=>`
+ <article class="card">
+ <div class="pic">${p.emoji}</div>
+ <div class="info"><h3>${p.name}</h3>
+ <div class="price">${money(p.price)}</div>
+ <div class="note">السعر تجريبي · حسب الطلب</div>
+ <button class="add" onclick="addToCart(${p.id})">أضيفي للسلة +</button>
+ </div></article>`).join('');
+}
+function filterProducts(cat,btn){
+ category=cat;
+ document.querySelectorAll('.filters .filter,nav button').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
+ renderProducts();
+}
+function addToCart(id){cart[id]=(cart[id]||0)+1;renderCart()}
+function changeQty(id,n){cart[id]=(cart[id]||0)+n;if(cart[id]<=0)delete cart[id];renderCart()}
+function renderCart(){
+ let ids=Object.keys(cart);
+ document.getElementById('count').textContent=ids.reduce((s,id)=>s+cart[id],0);
+ document.getElementById('cartItems').innerHTML=ids.length?ids.map(id=>{
+ let p=products.find(x=>x.id==id);
+ return `<div class="cart-row"><span>${p.emoji} ${p.name}<br>${money(p.price)}</span>
+ <div class="qty"><button type="button" onclick="changeQty(${id},-1)">−</button>${cart[id]}<button type="button" onclick="changeQty(${id},1)">+</button></div>
+ <button class="remove" type="button" onclick="delete cart[${id}];renderCart()">حذف</button></div>`;
+ }).join(''):'السلة فارغة حاليًا، اختاري قطعة تعجبك 💕';
+ document.getElementById('total').textContent=ids.length?'المجموع التقريبي: '+money(ids.reduce((s,id)=>s+products.find(p=>p.id==id).price*cart[id],0)):'';
+}
+document.getElementById('orderForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ if(!Object.keys(cart).length){alert('زيدي منتج للسلة أولًا 💗');return}
+ let lines=Object.keys(cart).map(id=>{let p=products.find(x=>x.id==id);return p.name+' × '+cart[id]+' — '+money(p.price*cart[id])}).join('\n');
+ alert('طلب تجريبي من VELORA 💗\n\nالاسم: '+document.getElementById('customer').value+'\nالهاتف: '+document.getElementById('phone').value+'\nالعنوان: '+document.getElementById('address').value+'\n\n'+lines+'\n\n'+document.getElementById('details').value+'\n\nاحتفظي بالتفاصيل؛ الطلب لم يُرسل للبائعة بعد.');
+});
+renderProducts();renderCart();
+</script>
+</body>
+</html>
