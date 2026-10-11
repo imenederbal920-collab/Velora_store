@@ -397,15 +397,20 @@
         preview.replaceChildren();
 
       } catch (error) {
-        console.error("Order submission error:", error);
-        showMessage(
+  console.error("Order submission error:", error);
+
+  showMessage(
+    "❌ فشل إرسال الطلب: " +
+    (error?.message || String(error))
+  );
+} finally {
+  submitBtn.disabled = false;
+  submitBtn.textContent = "إرسال الطلب";
+}
           "لم يتأكد تسجيل الطلب. " +
           (error.message || "حدث خطأ غير معروف") +
           " — ما تعاوديش الإرسال حتى نتحققوا من السبب."
         );
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "إرسال الطلب";
       }
     });
   </script>
