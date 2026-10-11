@@ -83,7 +83,8 @@ footer{text-align:center;padding:22px 12px;background:#f8e3ec;color:#966c7e;font
     <label for="address">الولاية والبلدية</label>
     <input id="address" required placeholder="مكان التوصيل">
     <label for="details">تفاصيل إضافية (المقاس، اللون...)</label>
-    <textarea id="details" rows="2" placeholder="اكتبي اختياراتك هنا"></textarea>
+    <label for="productImage">صورة المنتج (اختياري)</label>
+<input id="productImage" type="file" accept="image/jpeg,image/png,image/webp">
     <button class="order-btn" type="submit">إرسال الطلب</button>
     <p style="font-size:11px;line-height:1.8;color:#907d84">هذه نسخة تجريبية: الطلب سيُعرض لك على الشاشة فقط، ولن يصل إلى البائعة حتى نربط وسيلة استقبال الطلبات.</p>
   </form>
@@ -133,9 +134,86 @@ function renderCart(){
  <button class="remove" type="button" onclick="delete cart[${id}];renderCart()">حذف</button></div>`;
  }).join(''):'السلة فارغة حاليًا، اختاري قطعة تعجبك 💕';
  document.getElementById('total').textContent=ids.length?'المجموع التقريبي: '+money(ids.reduce((s,id)=>s+products.find(p=>p.id==id).price*cart[id],0)):'';
-}
-document.getElementById('orderForm').addEventListener('submit',e=>{
- e.preventDefault();
+
+const SUPABASE_URL = 'https://rogrvbgbrafuyzzxwsjf.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'ضعي_المفتاح_العام_هنا';
+
+document.getElementById('orderForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const ids = Object.keys(cart);
+  if (!ids.length) {
+    alert('زيدي منتج للسلة أولًا 💗');
+    return;
+  }
+
+  const image = document.getElementById('productImage').files[0];
+
+  if (image && (
+    !['image/jpeg', 'image/png', 'image/webp'].includes(image.type) ||
+    image.size > 5 * 1024 * 1024
+  )) {
+    alert('الصورة لازم تكون JPG أو PNG أو WebP وأقل من 5 MB.');
+    return;
+  }
+
+  const button = e.currentTarget.querySelector('[type="submit"]');
+  button.disabled = true;
+  button.textContent = 'جاري إرسال الطلب...';
+
+  try {
+    const items = ids.map(id => {
+      const p = products.find(x => x.id == id);
+      return {
+        id: p.id,
+        name: p.name,
+        quantity: cart[id],
+        unit_price: p.price,
+        total: p.price * cart[id]
+      };
+    });
+
+    const form = new FormData();
+    form.append('customer_name', document.getElementById('customer').value.trim());
+    form.append('customer_phone', document.getElementById('phone').value.trim());
+    form.append('customer_address', document.getElementById('address').value.trim());
+    form.append('product_name', items.map(x => x.name).join('، '));
+    form.append('product_details', document.getElementById('details').value.trim());
+    form.append('items', JSON.stringify(items));
+
+    if (image) form.append('image', image);
+
+    const response = await fetch(
+      `${SUPABASE_URL}/functions/v1/bright-processor`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY
+        },
+        body: form
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'تعذّر إرسال الطلب');
+    }
+
+    alert('وصل طلبك بنجاح إلى VELORA 💗 رقم الطلب: ' + result.order_id);
+    cart = {};
+    renderCart();
+    e.currentTarget.reset();
+
+  } catch (error) {
+    alert('ما قدرناش نرسلوا الطلب. حاولي مرة أخرى بعد التأكد من الاتصال والإعدادات.');
+    console.error(error);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'إرسال الطلب';
+  }
+});
+();
  if(!Object.keys(cart).length){alert('زيدي منتج للسلة أولًا 💗');return}
  let lines=Object.keys(cart).map(id=>{let p=products.find(x=>x.id==id);return p.name+' × '+cart[id]+' — '+money(p.price*cart[id])}).join('\n');
  alert('طلب تجريبي من VELORA 💗\n\nالاسم: '+document.getElementById('customer').value+'\nالهاتف: '+document.getElementById('phone').value+'\nالعنوان: '+document.getElementById('address').value+'\n\n'+lines+'\n\n'+document.getElementById('details').value+'\n\nاحتفظي بالتفاصيل؛ الطلب لم يُرسل للبائعة بعد.');
